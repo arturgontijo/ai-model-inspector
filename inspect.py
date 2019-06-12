@@ -56,22 +56,18 @@ def main():
     if opt == "" or opt == "tf":
         model_file = input("[{}] Model (Checkpoint Dir): ".format(opt))
         inspect_tensorflow(model_file)
-
     elif opt == "keras":
         model_file = input("[{}] Model (Architecture JSON): ".format(opt))
         weights_file = input("[{}] Weights (.h5): ".format(opt))
         inspect_keras(model_file, weights_file)
-
     elif opt == "cntk":
         model_file = input("[{}] Model File: ".format(opt))
         inspect_cntk(model_file)
-
     elif opt == "caffe":
         model_file = input("[{}] Model File (.caffemodel): ".format(opt))
         prototxt_file = input("[{}] File (.prototxt): ".format(opt))
         inspect_caffe(model_file, prototxt_file)
-    
-    elif opt == "torch":
+    elif opt == "t7":
         model_file = input("[{}] Model File (.ckpt|.pt): ".format(opt))
         inspect_torch(model_file)
 
