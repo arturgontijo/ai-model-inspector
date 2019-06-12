@@ -1,12 +1,33 @@
-import caffe
-
-import cntk
-
-import keras
-from keras.models import model_from_json, load_model
-
 import tensorflow as tf
 from tensorflow.python import pywrap_tensorflow
+import keras
+import cntk
+import caffe
+import torch
+
+
+def inspect_tensorflow(model_folder):
+    reader = pywrap_tensorflow.NewCheckpointReader(model_folder)
+    var_to_shape_map = reader.get_variable_to_shape_map()
+    for key in sorted(var_to_shape_map):
+        tf.shape(reader.get_tensor(key))
+
+
+def inspect_keras(model_file, weights_file=""):
+    if weights_file:
+        with open(model_file, 'r') as f:
+            m = keras.models.model_from_json(f.read())
+        m.load_weights(weights_file)
+    else:
+        m = keras.models.load_model(model_file)
+        m.summary()
+    print("Input: ", m.input)
+    print("Shape: ", m.input.shape)
+
+
+def inspect_cntk(model_file):
+    m = cntk.load_model(model_file)
+    print(m)
 
 
 def inspect_caffe(model_file="", prototxt_file=""):
@@ -20,28 +41,14 @@ def inspect_caffe(model_file="", prototxt_file=""):
     print([(k, v.data.shape) for k, v in net.blobs.items()])
 
 
-def inspect_cntk(model_file):
-    m = cntk.load_model(model_file)
-    print(m)
-
-
-def inspect_keras(model_file, weights_file=""):
-    if weights_file:
-        with open(model_file, 'r') as f:
-            m = model_from_json(f.read())
-        m.load_weights(weights_file)
+def inspect_torch(model_file):
+    m = torch.nn.Module()
+    checkpoint = torch.load(model_file, map_location='cpu')
+    if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
+        m.load_state_dict(checkpoint['state_dict'])
     else:
-        m = keras.models.load_model(model_file)
-        m.summary()
-    print("Input: ", m.input)
-    print("Shape: ", m.input.shape)
-
-
-def inspect_tensorflow(model_folder):
-    reader = pywrap_tensorflow.NewCheckpointReader(model_folder)
-    var_to_shape_map = reader.get_variable_to_shape_map()
-    for key in sorted(var_to_shape_map):
-        tf.shape(reader.get_tensor(key))
+        m.load_state_dict(checkpoint)
+    print(m)
 
 
 def main():
