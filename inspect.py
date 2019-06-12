@@ -44,11 +44,17 @@ def inspect_caffe(model_file="", prototxt_file=""):
 def inspect_torch(model_file):
     m = torch.nn.Module()
     checkpoint = torch.load(model_file, map_location='cpu')
-    if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
-        m.load_state_dict(checkpoint['state_dict'])
-    else:
-        m.load_state_dict(checkpoint)
-    print(m)
+    try:
+        if isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
+            m.load_state_dict(checkpoint['state_dict'])
+        else:
+            m.load_state_dict(checkpoint)
+    except Exception as e:
+        print("ERROR:", e)
+        m = checkpoint
+    finally:
+        for k in m.keys():
+            print(m[k].shape)
 
 
 def main():
