@@ -52,7 +52,7 @@ def inspect_torch(model_file):
 
 
 def main():
-    opt = input("Framework [tf | keras | cntk | caffe]: ")
+    opt = input("Framework [tf | keras | cntk | caffe | t7]: ")
     if opt == "" or opt == "tf":
         model_file = input("[{}] Model (Checkpoint Dir): ".format(opt))
         inspect_tensorflow(model_file)
@@ -70,6 +70,10 @@ def main():
         model_file = input("[{}] Model File (.caffemodel): ".format(opt))
         prototxt_file = input("[{}] File (.prototxt): ".format(opt))
         inspect_caffe(model_file, prototxt_file)
+    
+    elif opt == "torch":
+        model_file = input("[{}] Model File (.ckpt|.pt): ".format(opt))
+        inspect_torch(model_file)
 
 
 if __name__ == '__main__':
