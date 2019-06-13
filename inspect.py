@@ -6,11 +6,12 @@ import caffe
 import torch
 
 
-def inspect_tensorflow(model_folder):
-    reader = pywrap_tensorflow.NewCheckpointReader(model_folder)
+def inspect_tensorflow(model_file_prefix):
+    reader = pywrap_tensorflow.NewCheckpointReader(model_file_prefix)
     var_to_shape_map = reader.get_variable_to_shape_map()
-    for key in sorted(var_to_shape_map):
-        tf.shape(reader.get_tensor(key))
+    for k, _ in var_to_shape_map.items():
+        t = reader.get_tensor(k)
+        print("Input [shape]: {} [{}]".format(k, t.shape))
 
 
 def inspect_keras(model_file, weights_file=""):
@@ -21,13 +22,16 @@ def inspect_keras(model_file, weights_file=""):
     else:
         m = keras.models.load_model(model_file)
         m.summary()
-    print("Input: ", m.input)
-    print("Shape: ", m.input.shape)
+    print("Input [shape]: {} [{}]".format(m.input, m.input.shape))
+    print("Output [shape]: {} [{}]".format(m.output, m.output.shape))
 
 
 def inspect_cntk(model_file):
     m = cntk.load_model(model_file)
-    print(m)
+    print("Input [shape]: {} [{}]"
+          .format(m.arguments[0], m.arguments[0].shape))
+    print("Output [shape]: {} [{}]"
+          .format(m.output, m.output.shape))
 
 
 def inspect_caffe(model_file="", prototxt_file=""):
@@ -35,10 +39,10 @@ def inspect_caffe(model_file="", prototxt_file=""):
         net = caffe.Net(prototxt_file, model_file, caffe.TEST)
     else:
         net = caffe.Net(prototxt_file, caffe.TEST)
-    print("net.inputs:", net.inputs)
-    print("net.inputs(shape:", net.blobs[net.inputs[0]].data.shape)
-    print("net.params:", net.params)
-    print([(k, v.data.shape) for k, v in net.blobs.items()])
+    print("Input [shape]: {} [{}]"
+          .format(net.inputs[0], net.blobs[net.inputs[0]].data.shape))
+    print("Output [shape]: {} [{}]"
+          .format(net.outputs[0], net.blobs[net.outputs[0]].data.shape))
 
 
 def inspect_torch(model_file):
@@ -60,8 +64,8 @@ def inspect_torch(model_file):
 def main():
     opt = input("Framework [tf | keras | cntk | caffe | t7]: ")
     if opt == "" or opt == "tf":
-        model_file = input("[{}] Model (Checkpoint Dir): ".format(opt))
-        inspect_tensorflow(model_file)
+        model_file_prefix = input("[{}] Model (Prefix): ".format(opt))
+        inspect_tensorflow(model_file_prefix)
     elif opt == "keras":
         model_file = input("[{}] Model (Architecture JSON): ".format(opt))
         weights_file = input("[{}] Weights (.h5): ".format(opt))
